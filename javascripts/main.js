@@ -5,11 +5,24 @@ let Spotify = require('../lib/bower_components/spotify-web-api-js/src/spotify-we
 let spotifyApi = new Spotify();
 
 
+$(document).ready(() => {
+  let hash = location.hash; 
+  if (hash) {
+    let accessToken = findAccessToken(hash);
+    console.log(accessToken);
+    spotifyApi.setAccessToken(accessToken);
+    location.hash = ''; 
+  }
+});
 
-spotifyApi.setAccessToken('BQD_S9qNpRHQZK8t2s2TUrRrX6WiLgknf9q4YomnTE1FH8xOMvcbGjizhuSbUYA7N8ngs1lQ4ayXmVNY1vVMHbKyTq25Sqzd34SUVzNhc-IBd8nr5snrTmcNnEmj_zvLajOh0ldaOaxcorsvldrvnovj16IQlOdsbs0');
+
+const findAccessToken = (str) => {
+  let accessToken = str.match(/\#(?:access_token)\=([\S\s]*?)\&/)[1];
+  return accessToken; 
+};
 
 $('#NavToSpotifyLoginBtn').click(function(e) {
-    e.preventDefault(); e.stopPropagation();
+
     window.location.href = $(e.currentTarget).data().href;
 });
 
@@ -20,8 +33,15 @@ spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE', function(err, data) {
     else console.log('Artist albums', data);
   });
 
+const getRecentlyPlayed = () => {
   spotifyApi.getMyRecentlyPlayedTracks((err, data) => {
     if (err) console.log(err);
     else console.log('My recently played', data); 
   }); 
+}; 
+
+$(`#showButton`).click(() => {
+  getRecentlyPlayed(); 
+});
+
   
