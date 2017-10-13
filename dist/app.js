@@ -1,20 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict"; 
+"use strict";
 
 let Spotify = require('../lib/bower_components/spotify-web-api-js/src/spotify-web-api.js');
-
 let spotifyApi = new Spotify();
-
-
-$(document).ready(() => {
-  let hash = location.hash; 
-  if (hash) {
-    let accessToken = findAccessToken(hash);
-    console.log(accessToken);
-    spotifyApi.setAccessToken(accessToken);
-    location.hash = ''; 
-  }
-});
+const dom = require('./dom');
 
 
 const findAccessToken = (str) => {
@@ -22,32 +11,101 @@ const findAccessToken = (str) => {
   return accessToken; 
 };
 
-$('#NavToSpotifyLoginBtn').click(function(e) {
+const setSpotifyAccessToken = (tokenStr) => {
+    spotifyApi.setAccessToken(tokenStr); 
+};
 
-    window.location.href = $(e.currentTarget).data().href;
-});
-
-
-// get Elvis' albums, passing a callback. When a callback is passed, no Promise is returned
-spotifyApi.getArtistAlbums('43ZHCT0cAZBISjO8DG9PnE', function(err, data) {
-    if (err) console.error(err);
-    else console.log('Artist albums', data);
-  });
 
 const getRecentlyPlayed = () => {
   spotifyApi.getMyRecentlyPlayedTracks((err, data) => {
     if (err) console.log(err);
-    else console.log('My recently played', data); 
+    else {
+        dom.setRecentlyPlayed(data.items); 
+        dom.showRecentlyPlayedOnPage(); 
+    } 
   }); 
 }; 
 
-$(`#showButton`).click(() => {
-  getRecentlyPlayed(); 
+module.exports = {
+    findAccessToken,
+    setSpotifyAccessToken,
+    getRecentlyPlayed
+};
+},{"../lib/bower_components/spotify-web-api-js/src/spotify-web-api.js":5,"./dom":2}],2:[function(require,module,exports){
+"use strict";
+
+let recentlyPlayed = [];
+
+const setRecentlyPlayed = (_recentlyPlayed) => {
+    recentlyPlayed = _recentlyPlayed; 
+};
+
+
+const showRecentlyPlayedOnPage = () => {
+    let str = "";
+    recentlyPlayed.forEach((item) =>{
+        str += 
+        `<div class="badge-card magictime tinDownIn col-md-3">
+            <div class="image-container">
+                <img src="${item.track.album.image[1]}">
+            </div>
+        <div class="text-container">
+        </div>
+        </div>`;
+    });
+    printToDom(str); 
+};
+
+const printToDom = (str) => {
+    $('#recentlyPlayedHolder').html(str);
+};
+
+
+module.exports = {
+    setRecentlyPlayed,
+    showRecentlyPlayedOnPage
+};
+},{}],3:[function(require,module,exports){
+"use strict";
+
+const api = require("./api"); 
+const dom = require("./dom");
+
+$(document).ready(() => {
+    let hash = location.hash; 
+    if (hash) {
+      let accessToken = api.findAccessToken(hash);
+      if (accessToken.length > 10) {
+        api.setSpotifyAccessToken(accessToken);
+        location.hash = ''; 
+      }      
+    }
 });
+
+
+$('#NavToSpotifyLoginBtn').click(function(e) {    
+        window.location.href = $(e.currentTarget).data().href;
+    });
+
+
+$(`#showRecentlyPlayedBtn`).click(() => {
+    api.getRecentlyPlayed(); 
+});
+
+
+module.exports = {};
+
+
+},{"./api":1,"./dom":2}],4:[function(require,module,exports){
+"use strict"; 
+
+require('./events'); 
+
+
 
   
 
-},{"../lib/bower_components/spotify-web-api-js/src/spotify-web-api.js":2}],2:[function(require,module,exports){
+},{"./events":3}],5:[function(require,module,exports){
 /* global module */
 'use strict';
 
@@ -1783,4 +1841,4 @@ if (typeof module === 'object' && typeof module.exports === 'object') {
   module.exports = SpotifyWebApi;
 }
 
-},{}]},{},[1]);
+},{}]},{},[4]);
