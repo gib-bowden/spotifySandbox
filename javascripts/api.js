@@ -11,12 +11,13 @@ const findAccessToken = (str) => {
 };
 
 const setSpotifyAccessToken = (tokenStr) => {
+    sessionStorage.setItem("spotifyAccessToken", tokenStr);
     spotifyApi.setAccessToken(tokenStr); 
 };
 
 
-const getRecentlyPlayed = () => {
-  spotifyApi.getMyRecentlyPlayedTracks((err, data) => {
+const getRecentlyPlayed = (limitNum) => {
+  spotifyApi.getMyRecentlyPlayedTracks( {limit: limitNum}, (err, data) => {
     if (err) console.log(err);
     else {
         dom.setRecentlyPlayed(data.items); 
